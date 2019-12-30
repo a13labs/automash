@@ -78,7 +78,7 @@ function ansible_available_playbooks() {
     done
 }
 
-function ansible_run () {
+function ansible_run_playbook () {
 
     local ANSIBLE_INVENTORY="${1}"
     local ANSIBLE_PLAYBOOK="${2}"

@@ -18,6 +18,7 @@
 
 SCRIPTDIR=$(dirname "$(readlink -f "$0")")
 LIBDIR=${SCRIPTDIR}/../lib
+RESDIR=${SCRIPTDIR}/../resources
 
 source ${LIBDIR}/vault.bash || exit 1
 source ${LIBDIR}/ssh.bash || exit 1
@@ -45,6 +46,10 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
+if [ -f ansible.cfg ]; then
+    cp ${RESDIR}/ansible.cfg ./
+fi
+
 TARGET="${1}"
 PLAYBOOK="${ANSIBLE_PLAYBOOKS}/${2}.yml"
 
@@ -62,7 +67,7 @@ if [ -f "${ANSIBLE_KEY_FILE}" ]; then
 fi
 
 # Run ansible playbook
-ansible_run ${ANSIBLE_INVENTORY} ${PLAYBOOK} --extra-vars "target=${TARGET}" ${@:3} || { echo "$(basename ${0}): Something went wrong applying configuration!"; exit 1; }
+ansible_run_playbook ${ANSIBLE_INVENTORY} ${PLAYBOOK} --extra-vars "target=${TARGET}" ${@:3} || { echo "$(basename ${0}): Something went wrong applying configuration!"; exit 1; }
 
 # If ANSIBLE_KEY_FILE_ENCRYPTED is set we need to encrypt again the ssh_key
 [ -z ${ANSIBLE_KEY_FILE_ENCRYPTED} ] || encrypt_ssh_key "${ANSIBLE_KEY_FILE}" || exit 1
