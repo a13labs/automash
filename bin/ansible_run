@@ -1,0 +1,70 @@
+#!/bin/bash
+# 
+# Copyright 2019 Alexandre Pires (c.alexandre.pires@gmail.com)
+# 
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+# 
+#        http://www.apache.org/licenses/LICENSE-2.0
+# 
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+# 
+# File: ansible_run 
+
+SCRIPTDIR=$(dirname "$(readlink -f "$0")")
+LIBDIR=${SCRIPTDIR}/../lib
+
+source ${LIBDIR}/vault.bash || exit 1
+source ${LIBDIR}/ssh.bash || exit 1
+source ${LIBDIR}/ansible.bash || exit 1
+
+source project.rc || { echo "Project configuration not found! Aborting..."; exit 1 }
+
+if [ $# -eq 0 ]; then
+    printf "Ansible run configuration tool\n" 
+    printf "usage: %s <target> <playbook> [ansible extra options]\n" "$(basename ${0})"
+    
+    TARGETS=$(ansible_available_targets ${ANSIBLE_INVENTORY})
+    PLAYBOOKS=$(ansible_available_playbooks ${ANSIBLE_PLAYBOOKS})
+
+    printf "Available Targets\n"
+    for TARGET in ${TARGETS}; do
+        printf "\t- %s\n" ${TARGET}
+    done
+
+    printf "Available Playbooks\n"
+    for PLAYBOOK in ${PLAYBOOKS}; do
+        printf "\t- %s\n" ${PLAYBOOK}
+    done
+
+    exit 0
+fi
+
+TARGET="${1}"
+PLAYBOOK="${ANSIBLE_PLAYBOOKS}/${2}.yml"
+
+# Check if the target exists in the inventory or exit
+ansible_is_target_available ${ANSIBLE_INVENTORY}  ${TARGET} || { echo >&2 "$(basename ${0}): Target ${TARGET} it's not available in the inventory. Aborting."; exit 1; }
+
+# Check if the playbook exist in the plabooks directory or exit
+[ -f ${PLAYBOOK} ] || { echo >&2 "$(basename ${0}): Playbook ${PLAYBOOK} it's not available. Aborting."; exit 1; }
+
+ANSIBLE_KEY_FILE=$(ansible_config_get_value "private_key_file")
+
+if [ -f "${ANSIBLE_KEY_FILE}" ]; then
+    is_encrypted "${ANSIBLE_KEY_FILE}" && decrypt_ssh_key "${ANSIBLE_KEY_FILE}"
+    ANSIBLE_KEY_FILE_ENCRYPTED="${ANSIBLE_KEY_FILE}"
+fi
+
+# Run ansible playbook
+ansible_run ${ANSIBLE_INVENTORY} ${PLAYBOOK} --extra-vars "target=${TARGET}" ${@:3} || { echo "$(basename ${0}): Something went wrong applying configuration!"; exit 1; }
+
+# If ANSIBLE_KEY_FILE_ENCRYPTED is set we need to encrypt again the ssh_key
+[ -z ${ANSIBLE_KEY_FILE_ENCRYPTED} ] || encrypt_ssh_key "${ANSIBLE_KEY_FILE}" || exit 1
+
+exit 0
