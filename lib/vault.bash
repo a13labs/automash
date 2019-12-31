@@ -226,6 +226,47 @@ function vault_open () {
     rm --preserve-root "${TMP_FILE}"
 }
 
+function vault_list_keys () {
+
+    # No master password defined, cannot continue
+    [ -z ${VAULT_MASTER_PASSWORD} ] && return 1
+    
+    # Check if vault file exists
+    [ ! -f "${VAULT_PASSWORD_FILE}" ] && return 1
+
+    # Check if cault is encrypted
+    is_encrypted "${VAULT_PASSWORD_FILE}" || return 1
+    
+    # Return the value
+    printf "%s" $(cat "${VAULT_PASSWORD_FILE}" | decrypt "${VAULT_MASTER_PASSWORD}" | awk -F"=" '{print $1}'  )
+
+}
+
+function vault_del_key () {
+
+    local KEY="${1}"
+
+    # No master password defined, cannot continue
+    [ -z ${VAULT_MASTER_PASSWORD} ] && return 1
+    
+    # Check if vault file exists
+    [ ! -f "${VAULT_PASSWORD_FILE}" ] && return 1
+
+    # Check if cault is encrypted
+    is_encrypted "${VAULT_PASSWORD_FILE}" || return 1
+    
+    local TMP_FILE=$(mktemp)
+
+    # Decrypt the vault and remove the key
+    cat "${VAULT_PASSWORD_FILE}" | decrypt "${VAULT_MASTER_PASSWORD}" | grep -v ^${KEY}= > "${TMP_FILE}" 
+
+    # Encrypt the vault and remove temp file
+    cat ${TMP_FILE} | encrypt "${VAULT_MASTER_PASSWORD}" > "${VAULT_PASSWORD_FILE}"
+    rm --preserve-root "${TMP_FILE}"
+
+}
+
+
 function is_encrypted {
     local TMP_FILE=$(mktemp)
     cat ${1} | base64 -d &> ${TMP_FILE} || return 1

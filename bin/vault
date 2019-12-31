@@ -1,0 +1,58 @@
+#!/bin/bash
+# 
+# Copyright 2019 Alexandre Pires (c.alexandre.pires@gmail.com)
+# 
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+# 
+#        http://www.apache.org/licenses/LICENSE-2.0
+# 
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+# 
+# File: ansible_run 
+
+SCRIPTDIR=$(dirname "$(readlink -f "$0")")
+LIBDIR=${SCRIPTDIR}/../lib
+RESDIR=${SCRIPTDIR}/../resources
+
+source ${LIBDIR}/vault.bash || exit 1
+
+source project.rc || { echo "Project configuration not found! Aborting..."; exit 1; }
+
+if [ $# -eq 0 ]; then
+    printf "Vault Management Tool\n" 
+    printf "usage: %s [get|set|del|list] <key> <value>\n" "$(basename ${0})"
+    exit 0
+fi
+
+# Create ssh keys folder
+mkdir -p ${SSH_KEYS}
+
+case ${1} in 
+
+    get)
+        [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
+        vault_get_variable "${2}"
+        ;;
+    set)
+        [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
+        [ -z ${3} ] && { echo "Please specify value! Aborting..."; exit 1; }
+        vault_set_value "${2}" "${3}"
+        ;;
+    del)
+        vault_del_key "${2}"
+        ;;
+    list)
+        vault_list_keys
+        ;;
+    *)
+        echo "Unknown command ${1}! Aborting..."; exit 1;
+        ;;
+esac
+
+exit 0
