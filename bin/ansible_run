@@ -67,7 +67,7 @@ if [ -f "${ANSIBLE_KEY_FILE}" ]; then
 fi
 
 # Run ansible playbook
-ansible_run_playbook ${ANSIBLE_INVENTORY} ${PLAYBOOK} --extra-vars "target=${TARGET}" ${@:3} || { echo "$(basename ${0}): Something went wrong applying configuration!"; exit 1; }
+ansible_run_playbook ${ANSIBLE_INVENTORY} ${PLAYBOOK} --extra-vars "target=${TARGET}" ${@:3} || { echo "$(basename ${0}): Something went wrong applying configuration, is ANSIBLE_MASTER_PASSWORD set on the vault! Aborting..."; exit 1; }
 
 # If ANSIBLE_KEY_FILE_ENCRYPTED is set we need to encrypt again the ssh_key
 [ -z ${ANSIBLE_KEY_FILE_ENCRYPTED} ] || encrypt_ssh_key "${ANSIBLE_KEY_FILE}" || exit 1
