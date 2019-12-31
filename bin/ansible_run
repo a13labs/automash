@@ -24,7 +24,7 @@ source ${LIBDIR}/vault.bash || exit 1
 source ${LIBDIR}/ssh.bash || exit 1
 source ${LIBDIR}/ansible.bash || exit 1
 
-source project.rc || { echo "Project configuration not found! Aborting..."; exit 1 }
+source project.rc || { echo "Project configuration not found! Aborting..."; exit 1; }
 
 if [ $# -eq 0 ]; then
     printf "Ansible run configuration tool\n" 
