@@ -14,7 +14,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 # 
-# File: ansible_run 
+# File: ssh_keys 
 
 SCRIPTDIR=$(dirname "$(readlink -f "$0")")
 LIBDIR=${SCRIPTDIR}/../lib
@@ -38,18 +38,18 @@ case ${1} in
 
     lock)
         if [ -z ${2} ]; then
-            encrypt_ssh_keys ${SSH_KEYS}
+            encrypt_ssh_keys ${SSH_KEYS} || { echo "Something went wrong encrypting ssh keys, is SSH_KEYS_MASTER_PASSWORD set on the vault? Aborting..."; exit 1; }
         else
             [ -f ${SSH_KEYS}/${2}/id_rsa ] || { echo "Key ${2} does not exist! Aborting..."; exit 1; }
-            encrypt_ssh_keys ${SSH_KEYS}/${2}
+            encrypt_ssh_keys ${SSH_KEYS}/${2} || { echo "Something went wrong encrypting ssh keys, is SSH_KEYS_MASTER_PASSWORD set on the vault? Aborting..."; exit 1; }
         fi
         ;;
     unlock)
         if [ -z ${2} ]; then
-            decrypt_ssh_keys ${SSH_KEYS}
+            decrypt_ssh_keys ${SSH_KEYS} || { echo "Something went wrong encrypting ssh keys, is SSH_KEYS_MASTER_PASSWORD set on the vault? Aborting..."; exit 1; }
         else
             [ -f ${SSH_KEYS}/${2}/id_rsa ] || { echo "Key ${2} does not exist! Aborting..."; exit 1; }
-            decrypt_ssh_keys ${SSH_KEYS}/${2}
+            decrypt_ssh_keys ${SSH_KEYS}/${2} || { echo "Something went wrong encrypting ssh keys, is SSH_KEYS_MASTER_PASSWORD set on the vault? Aborting..."; exit 1; }
         fi
         ;;
     add)
