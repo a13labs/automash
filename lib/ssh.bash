@@ -40,12 +40,13 @@ function encrypt_ssh_keys () {
 
         # Skip if it's not a ssh key file
         ssh-keygen -lf "${SSH_KEY}" &>/dev/null || continue
-        
+
+        # If key is already encrypted skip        
+        [ -f "${SSH_KEY}.key" ] && continue
+
         # Encrypt the content
         cat "${SSH_KEY}" | encrypt "${SSH_KEYS_MASTER_PASSWORD}" > "${SSH_KEY}.key" || continue
-        
-        # Clean the unencrypted file
-        rm --preserve-root "${SSH_KEY}"
+
     done
 }
 
@@ -79,8 +80,6 @@ function decrypt_ssh_keys () {
 
         # Make sure we have the right permissions
         chmod 600 "${SSH_KEY%.*}"
-
-        rm --preserve-root "${SSH_KEY}"    
     done
 
     # clean up
@@ -107,9 +106,11 @@ function encrypt_ssh_key () {
     # Check if file is a ssh key file
     ssh-keygen -lf "${SSH_KEY_FILE}" &>/dev/null || return 1
 
+    # If key is already encrypted skip        
+    [ -f "${SSH_KEY_FILE}.key" ] && return 0
+
     # Encript the file and remove the original
     cat "${SSH_KEY_FILE}" | encrypt "${SSH_KEYS_MASTER_PASSWORD}" > "${SSH_KEY_FILE}.key" || continue
-    rm --preserve-root "${SSH_KEY_FILE}"
 }
 
 function decrypt_ssh_key () {
@@ -145,7 +146,6 @@ function decrypt_ssh_key () {
     chmod 600 "${SSH_KEY_FILE%.*}"
 
     # clean up
-    rm --preserve-root "${SSH_KEY_FILE}"
     rm --preserve-root "${TMP_FILE}"
 }
 
