@@ -40,7 +40,7 @@ if [ $# -eq 0 ]; then
 
     printf "Available Playbooks\n"
     for PLAYBOOK in ${PLAYBOOKS}; do
-        printf "\t- %s\n" ${PLAYBOOK}
+        printf "\t- %s\n" ${PLAYBOOK%.*}
     done
 
     exit 0
@@ -51,7 +51,7 @@ if [ -f ansible.cfg ]; then
 fi
 
 TARGET="${1}"
-PLAYBOOK="${ANSIBLE_PLAYBOOKS}/${2}.yml"
+PLAYBOOK="${ANSIBLE_PLAYBOOKS}/${2%.*}.yml"
 
 # Check if the target exists in the inventory or exit
 ansible_is_target_available ${ANSIBLE_INVENTORY}  ${TARGET} || { echo >&2 "$(basename ${0}): Target ${TARGET} it's not available in the inventory. Aborting."; exit 1; }
