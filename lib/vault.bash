@@ -238,7 +238,7 @@ function vault_list_keys () {
     is_encrypted "${VAULT_PASSWORD_FILE}" || return 1
     
     # Return the value
-    printf "%s" $(cat "${VAULT_PASSWORD_FILE}" | decrypt "${VAULT_MASTER_PASSWORD}" | awk -F"=" '{print $1}'  )
+    printf "%s\n" $(cat "${VAULT_PASSWORD_FILE}" | decrypt "${VAULT_MASTER_PASSWORD}" | awk -F"=" '{print $1}'  )
 
 }
 
@@ -265,7 +265,6 @@ function vault_del_key () {
     rm --preserve-root "${TMP_FILE}"
 
 }
-
 
 function is_encrypted {
     local TMP_FILE=$(mktemp)

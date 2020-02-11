@@ -37,7 +37,7 @@ case ${1} in
 
     get)
         [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
-        vault_get_variable "${2}"
+        vault_get_variable "${2}" && echo
         ;;
     set)
         [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
@@ -49,6 +49,10 @@ case ${1} in
         ;;
     list)
         vault_list_keys
+        ;;
+    clip)
+        [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
+        vault_get_value "${2}" | xclip -sel clip
         ;;
     *)
         echo "Unknown command ${1}! Aborting..."; exit 1;
