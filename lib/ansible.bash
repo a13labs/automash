@@ -113,6 +113,38 @@ function ansible_run_playbook () {
     rm --preserve-root "${ANSIBLE_VAULT_PIPE}"
 }
 
+function tf_ansible_run_playbook () {
+
+    local ANSIBLE_INVENTORY="${1}"
+    local ANSIBLE_PLAYBOOK="${2}"
+
+    # Exits if playbook does not exists
+    [ -f ${ANSIBLE_PLAYBOOK} ] || return 1
+
+    # If we have the password set on the Vault we get the value
+    if vault_has_value "ANSIBLE_MASTER_PASSWORD"; then
+        eval $(vault_get_local_variable "ANSIBLE_MASTER_PASSWORD")
+    else
+        return 1
+    fi
+
+    # Create a temporay file name to link to a FIFO
+    local ANSIBLE_VAULT_PIPE=$(mktemp -u)
+    
+    # Create a temporary FIFO pipe and lock permissions to user
+    mkfifo "${ANSIBLE_VAULT_PIPE}"
+    chmod 600 "${ANSIBLE_VAULT_PIPE}"
+
+    # Write Ansible password to the pipe
+    echo "${ANSIBLE_MASTER_PASSWORD}" > ${ANSIBLE_VAULT_PIPE} &
+    
+    # Run Ansible playbook and link to the temporary FIFO pipe for the password
+    ansible-playbook --vault-password-file=${ANSIBLE_VAULT_PIPE} ${@:3} -i ${ANSIBLE_INVENTORY}, ${ANSIBLE_PLAYBOOK} 
+    
+    # Remove the pip
+    rm --preserve-root "${ANSIBLE_VAULT_PIPE}"
+}
+
 function ansible_set_password () {
 
     local NEW_PASSWORD="${1}"
