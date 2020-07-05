@@ -26,16 +26,19 @@ type -t vault_get_value | grep -q "^function$" || { echo >&2 "I require vault_ge
 type -t vault_get_local_variable | grep -q "^function$" || { echo >&2 "I require vault_get_local_variable but it's not defined. Aborting."; return 1; }
 type -t vault_set_value | grep -q "^function$" || { echo >&2 "I require vault_set_value but it's not defined. Aborting."; return 1; }
 
+TERRAFORMCMD=${TERRAFORMCMD:-terraform}
+
 function tf_compose_vars_file () {
     local SOURCE_FOLDER=${1}
 
     [ -d ${SOURCE_FOLDER} ] || return 1
 
     # Search for tfvars files in folder add as -var-file=${VAR_FILE}
-
-    for VAR_FILE in $(find ${SOURCE_FOLDER} -type f -name *.tfvars) ; do 
-        head -n 1 ${VAR_FILE} | grep -q "#VAULT" && continue || echo "-var-file=${VAR_FILE}"
-    done    
+    pushd ${SOURCE_FOLDER} >/dev/null 
+    for VAR_FILE in $(find . -type f -name '*.tfvars') ; do 
+        head -n 1 ${VAR_FILE} | grep -q "#VAULT" && continue || echo "-var-file=$(pwd)/$(basename ${VAR_FILE})"
+    done 
+    popd >/dev/null   
 }
 
 function tf_compose_vars_export () {
@@ -44,10 +47,11 @@ function tf_compose_vars_export () {
     [ -d ${SOURCE_FOLDER} ] || return 1
 
     # Search for tfvars files in folder add as -var-file=${VAR_FILE}
-
-    for VAR_FILE in $(find ${SOURCE_FOLDER} -type f -name *.tfvars) ; do 
+    pushd ${SOURCE_FOLDER} >/dev/null 
+    for VAR_FILE in $(find . -type f -name '*.tfvars') ; do 
         head -n 1 ${VAR_FILE} | grep -q "#VAULT" && echo $(tf_compose_resource ${VAR_FILE} "export TF_VAR_" ";")
     done    
+    popd >/dev/null   
 }
 
 function tf_compose_resource () {
@@ -73,20 +77,22 @@ function tf_init () {
     # Exits if folder or backend configuration does not exists
     [ -d ${SOURCE_FOLDER} ] || return 1
 
-    local BACKEND_CONFIG_VARS="${SOURCE_FOLDER}/backend/config.tfvars"
-    local BACKEND_CONFIG_VARS_RENDERED="${SOURCE_FOLDER}/backend/config-rendered.tfvars"
+    pushd ${SOURCE_FOLDER} >/dev/null 
+    local BACKEND_CONFIG_VARS="backend/config.tfvars"
+    local BACKEND_CONFIG_VARS_RENDERED="backend/config-rendered.tfvars"
 
     # If environment is defined the configuration is related to the current ENV
     if [ ! -z ${ENV} ]; then
-        local BACKEND_CONFIG_VARS="${SOURCE_FOLDER}/backend/${ENV}/config.tfvars"
-        local BACKEND_CONFIG_VARS_RENDERED="${SOURCE_FOLDER}/backend/${ENV}/config-rendered.tfvars"
+        local BACKEND_CONFIG_VARS="backend/${ENV}/config.tfvars"
+        local BACKEND_CONFIG_VARS_RENDERED="backend/${ENV}/config-rendered.tfvars"
     fi
 
     [ -f "${BACKEND_CONFIG_VARS}" ] && tf_compose_resource "${BACKEND_CONFIG_VARS}" > ${BACKEND_CONFIG_VARS_RENDERED} 
 
-    terraform init -backend-config="${BACKEND_CONFIG_VARS_RENDERED}" -reconfigure ${SOURCE_FOLDER}
+    ${TERRAFORMCMD} init -backend-config="${BACKEND_CONFIG_VARS_RENDERED}" -reconfigure .
 
     rm --preserve-root ${BACKEND_CONFIG_VARS_RENDERED}
+    popd >/dev/null
 }
 
 function tf_apply () {
@@ -96,7 +102,21 @@ function tf_apply () {
     # Exits if folder does not exists
     [ -d ${SOURCE_FOLDER} ] || return 1
 
-    terraform apply -input=false ${@:2} ${SOURCE_FOLDER}
+    pushd ${SOURCE_FOLDER} >/dev/null 
+    ${TERRAFORMCMD} apply -no-color -input=false ${@:2} .
+    popd >/dev/null
+}
+
+function tf_output () {
+   
+    local SOURCE_FOLDER="${1}"
+
+    # Exits if folder does not exists
+    [ -d ${SOURCE_FOLDER} ] || return 1
+
+    pushd ${SOURCE_FOLDER} >/dev/null 
+    ${TERRAFORMCMD} output ${@:2}
+    popd >/dev/null
 }
 
 function tf_destroy () {
@@ -106,7 +126,9 @@ function tf_destroy () {
     # Exits if folder does not exists
     [ -d ${SOURCE_FOLDER} ] || return 1
 
-	terraform destroy -input=false ${@:2} ${SOURCE_FOLDER} 
+    pushd ${SOURCE_FOLDER} >/dev/null 
+	${TERRAFORMCMD} destroy -input=false ${@:2} .
+    popd >/dev/null
 }
 
 function tf_encrypt_secrets {

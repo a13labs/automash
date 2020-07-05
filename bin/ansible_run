@@ -66,6 +66,8 @@ if [ -f "${ANSIBLE_KEY_FILE}" ]; then
     ANSIBLE_KEY_FILE_ENCRYPTED="${ANSIBLE_KEY_FILE}"
 fi
 
+export SSH_KEYS_FOLDER="${PWD}/${SSH_KEYS}"
+
 # Run ansible playbook
 ansible_run_playbook ${ANSIBLE_INVENTORY} ${PLAYBOOK} --extra-vars "target=${TARGET}" ${@:3} || { echo "$(basename ${0}): Something went wrong applying configuration, is ANSIBLE_MASTER_PASSWORD set on the vault! Aborting..."; exit 1; }
 
