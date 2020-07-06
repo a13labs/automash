@@ -1,0 +1,25 @@
+// Uses Declarative syntax to run commands inside a container.
+pipeline {
+    agent {
+        node {
+            label "pod-dind"
+        }
+    }
+    stages {
+        stage('Build and Push Docker Images'){
+            steps{
+                container("dind") {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', 
+                        credentialsId: "nexus-jenkins-credentials", 
+                        usernameVariable: 'DOCKER_USER', 
+                        passwordVariable: 'DOCKER_PASSWORD']]) {
+
+                        sh "docker login https://docker.alexpires.me -u '${DOCKER_USER}' -p '${DOCKER_PASSWORD}'"
+                        sh "docker build --network=host -t docker.alexpires.me/infratools:latest -f Dockerfile ."
+                        sh "docker push docker.alexpires.me/infratools:latest"
+                    }                     
+                }
+            }
+        }                
+    }
+}
