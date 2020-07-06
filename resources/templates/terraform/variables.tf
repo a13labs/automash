@@ -1,0 +1,3 @@
+/*
+ Define your terraform variables here
+*/

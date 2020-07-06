@@ -1,0 +1,4 @@
+ANSIBLE_INVENTORY="hosts"
+ANSIBLE_PLAYBOOKS="playbooks"
+TERRAFORM_PROJECTS="terraform"
+SSH_KEYS="ssh-keys"

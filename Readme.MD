@@ -9,6 +9,12 @@ Add the following entry to your .bashrc file
 source <project_location>/infra-tools.bash
 ```
 
+# Creating a project
+
+Command:
+- create_project <```project name```> -> create a project in the current directory
+
+
 # A common project structure
 
 ```
@@ -96,6 +102,7 @@ Needs documentation
 # Terraform
 
 Commands:
+- tf_create <```project name```> 
 - tf_apply <```project name```> <```terraform options```>
 - tf_destroy <```project name```> <```terraform options```>
 
