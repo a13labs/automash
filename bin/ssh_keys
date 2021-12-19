@@ -48,8 +48,8 @@ case ${1} in
         if [ -z ${2} ]; then
             decrypt_ssh_keys ${SSH_KEYS} || { echo "Something went wrong encrypting ssh keys, is SSH_KEYS_MASTER_PASSWORD set on the vault? Aborting..."; exit 1; }
         else
-            [ -f ${SSH_KEYS}/${2}/id_rsa ] || { echo "Key ${2} does not exist! Aborting..."; exit 1; }
-            decrypt_ssh_keys ${SSH_KEYS}/${2} || { echo "Something went wrong encrypting ssh keys, is SSH_KEYS_MASTER_PASSWORD set on the vault? Aborting..."; exit 1; }
+            [ -f ${SSH_KEYS}/${2}/id_rsa.key ] || { echo "Key ${2} does not exist! Aborting..."; exit 1; }
+            decrypt_ssh_keys ${SSH_KEYS}/${2} || { echo "Something went wrong decrypting ssh keys, is SSH_KEYS_MASTER_PASSWORD set on the vault? Aborting..."; exit 1; }
         fi
         ;;
     add)

@@ -1,8 +1,4 @@
-shopt -s expand_aliases
-
-eval "alias reload=\"source ${INFRA_TOOLS_DIR}/lib/shell.bash\""
-
-function set_ssh_key {
+function set_ssh_key () {
     # Set the ssh key to use
     if [ -f ${HOME}/.ssh/keys/id_rsa.${1} ]; then
         echo "Using key ${HOME}/.ssh/keys/id_rsa.${1}"

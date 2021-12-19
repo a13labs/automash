@@ -73,7 +73,7 @@ function decrypt_ssh_keys () {
         cat "${SSH_KEY}" | decrypt "${SSH_KEYS_MASTER_PASSWORD}" >"${TMP_FILE}"
         
         # validate if it is a ssh key file
-        ssh-keygen -lf "${TMP_FILE}" &>/dev/null || continue
+        ssh-keygen -lf "${TMP_FILE}" &>/dev/null || return 1
         
         # restore the file
         cp "${TMP_FILE}" "${SSH_KEY%.*}"

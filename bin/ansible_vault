@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+# Copyright 2019 Alexandre Pires (c.alexandre.pires@gmail.com)
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+# File: ansible_run
+
+SCRIPTDIR=$(dirname "$(readlink -f "$0")")
+LIBDIR=${SCRIPTDIR}/../lib
+RESDIR=${SCRIPTDIR}/../resources
+
+source ${LIBDIR}/vault.bash || exit 1
+source ${LIBDIR}/ssh.bash || exit 1
+source ${LIBDIR}/ansible.bash || exit 1
+
+source project.rc || {
+    echo "Project configuration not found! Aborting..."
+    exit 1
+}
+
+if [ $# -eq 0 ]; then
+    printf "Ansible Encrypt/Decrypt Tool\n"
+    printf "usage: %s [encrypt] <key> <value>\n" "$(basename ${0})"
+    exit 0
+fi
+
+case ${1} in
+
+encrypt)
+    [ -z ${2} ] && {
+        echo "Please specify key! Aborting..."
+        exit 1
+    }
+    [ -z ${3} ] && ansible_encrypt_key_stdin ${2} || ansible_encrypt_key_value ${2} ${3}
+    exit 0
+    ;;
+*)
+    echo "Unknown command ${1}! Aborting..."
+    exit 1
+    ;;
+esac
