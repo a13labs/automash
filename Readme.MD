@@ -6,7 +6,7 @@
 
 Add the following entry to your .bashrc file
 ```
-source <project_location>/infra-tools.bash
+source <project_location>/automash.bash
 ```
 
 # Creating a project
