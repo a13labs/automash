@@ -107,6 +107,18 @@ function tf_apply () {
     popd >/dev/null
 }
 
+function tf_plan () {
+   
+    local SOURCE_FOLDER="${1}"
+
+    # Exits if folder does not exists
+    [ -d ${SOURCE_FOLDER} ] || return 1
+
+    pushd ${SOURCE_FOLDER} >/dev/null 
+    ${TERRAFORMCMD} plan -no-color -input=false ${@:2} .
+    popd >/dev/null
+}
+
 function tf_output () {
    
     local SOURCE_FOLDER="${1}"

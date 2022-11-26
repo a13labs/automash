@@ -1,0 +1,58 @@
+#!/bin/bash
+# 
+# Copyright 2019 Alexandre Pires (c.alexandre.pires@gmail.com)
+# 
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+# 
+#        http://www.apache.org/licenses/LICENSE-2.0
+# 
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+# 
+# File: tf_apply 
+
+SCRIPTDIR=$(dirname "$(readlink -f "$0")")
+LIBDIR=${SCRIPTDIR}/../lib
+
+source ${LIBDIR}/vault.bash || exit 1
+source ${LIBDIR}/ssh.bash || exit 1
+source ${LIBDIR}/terraform.bash || exit 1
+
+source project.rc || { echo "Project configuration not found! Aborting..."; exit 1; }
+
+if [ $# -eq 0 ]; then
+    printf "Terraform apply tool - version %s\n" "$(cat VERSION)"
+    printf "usage: %s <terraform project> [terraform options]\n" "$(basename ${0})"
+    exit 0
+fi
+
+TERRAFORM_PROJECT="${TERRAFORM_PROJECTS}/${1}"
+
+# Check if the target exists in the inventory or exit
+[ -d ${TERRAFORM_PROJECT} ] || { echo >&2 "$(basename ${0}): Project ${TERRAFORM_PROJECT} does not exists. Aborting."; exit 1; }
+
+TF_VARS_DIR="${TERRAFORM_PROJECT}/vars"
+
+if [ ! -z ${ENV} ]; then
+  TF_VARS_DIR="${TERRAFORM_PROJECT}/vars/${ENV}"
+fi
+
+export TF_VAR_ssh_keys_folder="${PWD}/${SSH_KEYS}"
+export TF_VAR_gpg_key_file="${PWD}/gpgkey"
+export VAULT_PASSWORD_FILE="${PWD}/repository.vault"
+
+# Check if the target exists in the inventory or exit
+[ -d ${TF_VARS_DIR} ] && TF_VARS="$(tf_compose_vars_file ${TF_VARS_DIR})"; eval $(tf_compose_vars_export ${TF_VARS_DIR})
+
+# Initialize terraform
+tf_init ${TERRAFORM_PROJECT}
+
+# Run ansible playbook
+tf_plan ${TERRAFORM_PROJECT} ${TF_VARS[@]} ${@:2} || { echo "$(basename ${0}): Something went wrong applying terraform!"; exit 1; }
+
+exit 0
