@@ -134,7 +134,7 @@ function vault_get_variable () {
     cat "${VAULT_PASSWORD_FILE}" | decrypt "${VAULT_MASTER_PASSWORD}" | grep -q ^${KEY}= || return 1
 
     # Return the value
-    printf "%s" $(cat "${VAULT_PASSWORD_FILE}" | decrypt "${VAULT_MASTER_PASSWORD}" | grep ^${KEY}=)
+    printf "%s" $(cat "${VAULT_PASSWORD_FILE}" | decrypt "${VAULT_MASTER_PASSWORD}" | grep ^${KEY}= | sed 's/\$/\\\$/g')
 }
 
 function vault_get_local_variable () {
@@ -151,14 +151,14 @@ function vault_get_quoted_value () {
 
     local KEY="${1}"
     eval $(vault_get_variable ${KEY})
-    echo "\"${!KEY}\""
+    echo "\"${!KEY}\"" | sed 's/\$/\\\$/g'
 }
 
 function vault_get_value () {
 
     local KEY="${1}"
     eval $(vault_get_variable ${KEY})
-    echo ${!KEY}
+    echo ${!KEY} 
 }
 
 function vault_set_value () {

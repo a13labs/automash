@@ -138,7 +138,7 @@ function ansible_encrypt_key_value () {
     # Ansible vault encrypt key/vaule
     ansible-vault encrypt_string --vault-password-file=${ANSIBLE_VAULT_PIPE} ${VALUE} --name ${KEY}
     
-    # Remove the pip
+    # Remove the pipe
     rm --preserve-root "${ANSIBLE_VAULT_PIPE}"
 }
 

@@ -39,6 +39,14 @@ case ${1} in
         [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
         vault_get_variable "${2}" && echo
         ;;
+    get_unquoted)
+        [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
+        vault_get_value "${2}" 
+        ;;
+    get_quoted)
+        [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
+        vault_get_quoted_value "${2}" && echo
+        ;;
     set)
         [ -z ${2} ] && { echo "Please specify key! Aborting..."; exit 1; }
         [ -z ${3} ] && { echo "Please specify value! Aborting..."; exit 1; }

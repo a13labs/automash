@@ -89,7 +89,7 @@ function tf_init () {
 
     [ -f "${BACKEND_CONFIG_VARS}" ] && tf_compose_resource "${BACKEND_CONFIG_VARS}" > ${BACKEND_CONFIG_VARS_RENDERED} 
 
-    ${TERRAFORMCMD} init -backend-config="${BACKEND_CONFIG_VARS_RENDERED}" -reconfigure .
+    ${TERRAFORMCMD} init -backend-config="${BACKEND_CONFIG_VARS_RENDERED}" -reconfigure -upgrade
 
     rm --preserve-root ${BACKEND_CONFIG_VARS_RENDERED}
     popd >/dev/null
@@ -103,7 +103,7 @@ function tf_apply () {
     [ -d ${SOURCE_FOLDER} ] || return 1
 
     pushd ${SOURCE_FOLDER} >/dev/null 
-    ${TERRAFORMCMD} apply -no-color -input=false ${@:2} .
+    ${TERRAFORMCMD} apply -no-color -input=false ${@:2}
     popd >/dev/null
 }
 
@@ -115,7 +115,31 @@ function tf_plan () {
     [ -d ${SOURCE_FOLDER} ] || return 1
 
     pushd ${SOURCE_FOLDER} >/dev/null 
-    ${TERRAFORMCMD} plan -no-color -input=false ${@:2} .
+    ${TERRAFORMCMD} plan -no-color -input=false ${@:2}
+    popd >/dev/null
+}
+
+function tf_import () {
+   
+    local SOURCE_FOLDER="${1}"
+
+    # Exits if folder does not exists
+    [ -d ${SOURCE_FOLDER} ] || return 1
+
+    pushd ${SOURCE_FOLDER} >/dev/null 
+    ${TERRAFORMCMD} import ${@:2}
+    popd >/dev/null
+}
+
+function tf_cmd () {
+   
+    local SOURCE_FOLDER="${1}"
+
+    # Exits if folder does not exists
+    [ -d ${SOURCE_FOLDER} ] || return 1
+
+    pushd ${SOURCE_FOLDER} >/dev/null 
+    ${TERRAFORMCMD} ${@:2}
     popd >/dev/null
 }
 
@@ -139,7 +163,7 @@ function tf_destroy () {
     [ -d ${SOURCE_FOLDER} ] || return 1
 
     pushd ${SOURCE_FOLDER} >/dev/null 
-	${TERRAFORMCMD} destroy -input=false ${@:2} .
+	${TERRAFORMCMD} destroy -input=false ${@:2}
     popd >/dev/null
 }
 
