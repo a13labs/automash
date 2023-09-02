@@ -1,3 +1,8 @@
+
+# THIS PROJECT IS DEPRECATED
+
+Check <https://github.com/a13labs/sectool>
+
 # Infra Tools
 
 - Set of script and tools to help on infrastructure management
@@ -5,6 +10,7 @@
 # Installation
 
 Add the following entry to your .bashrc file
+
 ```
 source <project_location>/automash.bash
 ```
@@ -12,8 +18,8 @@ source <project_location>/automash.bash
 # Creating a project
 
 Command:
-- create_project <```project name```> -> create a project in the current directory
 
+- create_project <```project name```> -> create a project in the current directory
 
 # A common project structure
 
@@ -48,7 +54,7 @@ Command:
 └── ssh.cfg
 ```
 
-# Project config file 
+# Project config file
 
 You might change the structure above you just need to set ```project.rc``` to reflect the changes
 
@@ -73,6 +79,7 @@ SSH_KEYS="ssh-keys"
 The vault use an environment variable called ```VAULT_MASTER_PASSWORD```, to use it always set this variable before running any command.
 
 Available commands:
+
 - get <```name```> : show password
 - set <```name```> <```value```> : set password
 - list : list passwords
@@ -102,13 +109,13 @@ Needs documentation
 # Terraform
 
 Commands:
-- tf_create <```project name```> 
+
+- tf_create <```project name```>
 - tf_apply <```project name```> <```terraform options```>
 - tf_destroy <```project name```> <```terraform options```>
 
 # Ansible
 
 Commands:
+
 - ansible_run <```target name```> <```playbook name```> <```ansible options```>
-
-
